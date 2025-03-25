@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 
@@ -138,7 +139,11 @@ const Dashboard: React.FC = () => {
       >
         <h1 style={{ textAlign: 'center' }}>Dashboard Operacional - Observabilidade</h1>
         <div style={{ display: 'flex', justifyContent: 'space-evenly', marginBottom: '1rem' }}>
+          <div>
           <h2>Servidores Ativos: {activeServers}/{totalServers}</h2>
+
+            <Link   style={{ color: 'blue', textDecoration: 'underline' }} href={"/dashboard/estrategico"} >Dashboard Estratégico</Link>
+          </div>
         </div>
         <button
           onClick={() => setDarkMode(!darkMode)}
