@@ -1,103 +1,173 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
+
+const Dashboard: React.FC = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [cpuUsage, setCpuUsage] = useState<number>(0);
+  const [memoryUsage, setMemoryUsage] = useState<number>(0);
+  const [timeData, setTimeData] = useState<string[]>([]);
+  const [responseData, setResponseData] = useState<number[]>([]);
+  const [totalCpu, setTotalCpu] = useState<number>(8); // Total de CPUs (exemplo)
+  const [totalMemory, setTotalMemory] = useState<number>(16); // Total de memória RAM em GB (exemplo)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newCpuUsage = Math.round(Math.random() * 100);
+      const newMemoryUsage = Math.round(Math.random() * 100);
+      setCpuUsage(newCpuUsage);
+      setMemoryUsage(newMemoryUsage);
+
+      const now = new Date().toLocaleTimeString();
+      setTimeData((prev) => {
+        const updated = [...prev, now];
+        return updated.length > 10 ? updated.slice(1) : updated;
+      });
+      setResponseData((prev) => {
+        const newResponse = Math.round(Math.random() * 300);
+        const updated = [...prev, newResponse];
+        return updated.length > 10 ? updated.slice(1) : updated;
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const theme = darkMode ? 'dark' : 'light';
+
+  const gaugeOptionCpu = {
+    tooltip: { formatter: '{a} <br/>{b} : {c}%' },
+    series: [
+      {
+        name: 'Uso de CPU',
+        type: 'gauge',
+        detail: { formatter: '{value}%' },
+        data: [{ value: cpuUsage, name: 'CPU' }],
+      },
+    ],
+  };
+
+  const gaugeOptionMemory = {
+    tooltip: { formatter: '{a} <br/>{b} : {c}%' },
+    series: [
+      {
+        name: 'Uso de Memória',
+        type: 'gauge',
+        detail: { formatter: '{value}%' },
+        data: [{ value: memoryUsage, name: 'Memória' }],
+      },
+    ],
+  };
+
+  const lineChartOption = {
+    title: { text: 'Tempo de Resposta do Servidor (ms)' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: timeData },
+    yAxis: { type: 'value', min: 0, max: 500 },
+    series: [
+      {
+        name: 'Tempo de Resposta',
+        type: 'line',
+        data: responseData,
+        smooth: true,
+      },
+    ],
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div
+      style={{
+        padding: '1rem',
+        backgroundColor: darkMode ? '#121212' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          border: `4px solid ${darkMode ? '#bb86fc' : '#6200ee'}`,
+          borderRadius: '15px',
+          padding: '1rem',
+          boxShadow: darkMode
+            ? '0 4px 10px rgba(187, 134, 252, 0.5)'
+            : '0 4px 10px rgba(98, 0, 238, 0.5)',
+          width: '100%',
+          maxWidth: '1920px',
+        }}
+      >
+        <h1 style={{ textAlign: 'center' }}>Dashboard Operacional - Observabilidade</h1>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <div>
+            <h2>Total de CPUs: {totalCpu}</h2>
+          </div>
+          <div>
+            <h2>Total de RAM: {totalMemory} GB</h2>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={{
+            display: 'block',
+            margin: '1rem auto',
+            padding: '0.5rem 1rem',
+            backgroundColor: darkMode ? '#bb86fc' : '#6200ee',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Alternar para {darkMode ? 'Modo Claro' : 'Modo Escuro'}
+        </button>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
+            gap: '1rem',
+            marginTop: '2rem',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <div style={{ flex: '1 1 400px', maxWidth: '45%', height: 300 }}>
+            <ReactECharts
+              option={gaugeOptionCpu}
+              theme={theme}
+              style={{ height: '100%', width: '100%' }}
+            />
+          </div>
+          <div style={{ flex: '1 1 400px', maxWidth: '45%', height: 300 }}>
+            <ReactECharts
+              option={gaugeOptionMemory}
+              theme={theme}
+              style={{ height: '100%', width: '100%' }}
+            />
+          </div>
+        </div>
+        <div style={{ marginTop: '3rem', width: '100%' }}>
+          <ReactECharts
+            option={lineChartOption}
+            theme={theme}
+            style={{ height: 400, width: '100%' }}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
